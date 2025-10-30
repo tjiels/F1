@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang='en'>
+<head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>F1 2025 Title — Widget</title>
+<style>
+:root{--bg:#1c1f26;--panel:#2a2f38;--border:#3a404c;--text:#e6e9ef;--muted:#a7b0c0;--good:#51d16f;--bad:#ff6b6b;--info:#58b0ff}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial}
+.wrap{max-width:900px;margin:0 auto;padding:10px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px}
+h3{margin:0 0 8px;font-size:15px}
+.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:10px} @media(max-width:760px){.grid{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:left}
+thead th{background:#222733;color:#cfd6e5;position:sticky;top:0}
+select{width:100%;padding:5px 6px;border-radius:6px;border:1px solid var(--border);background:#1f2430;color:var(--text)}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi .tile{background:#232832;border:1px solid var(--border);padding:10px;border-radius:10px}
+.label{font-size:11px;color:var(--muted)} .value{font-size:20px;font-weight:800}
+.bar{height:8px;background:#1f2430;border:1px solid var(--border);border-radius:999px;overflow:hidden;margin-top:6px}
+.bar>div{height:100%;background:var(--info);width:0%}
+.delta{font-variant-numeric:tabular-nums} .delta.good{color:var(--good)} .delta.bad{color:var(--bad)} .delta.neutral{color:#ffd166}
+.hint{color:var(--muted);font-size:11px;margin-top:6px}
+</style></head>
+<body>
+<div class='wrap'><div class='grid'>
+<section class='card'><h3>What‑If Sessions</h3>
+<table id='sessions'><thead><tr><th>Session</th><th>Type</th><th>Max Pos</th><th>Max</th><th>Nor</th><th>Nor</th><th>Pia</th><th>Pia</th></tr></thead><tbody id='tbody'></tbody></table>
+<div class='hint'>GP P1..P10 • Sprint P1..P8 • Start: Max 321, Norris 357, Piastri 356.</div></section>
+<aside class='card'><h3>Standings</h3>
+<div class='kpi'>
+ <div class='tile'><div class='label'>Max</div><div class='value' id='maxTotal'>321</div><div class='bar'><div id='barMax'></div></div></div>
+ <div class='tile'><div class='label'>Norris</div><div class='value' id='norTotal'>357</div><div class='bar'><div id='barNor'></div></div></div>
+ <div class='tile'><div class='label'>Piastri</div><div class='value' id='piaTotal'>356</div><div class='bar'><div id='barPia'></div></div></div>
+ <div class='tile'><div class='label'>Gaps (Max −)</div><div class='value delta bad' id='gapNor'>-36</div><div class='value delta bad' id='gapPia' style='margin-top:6px;'>-35</div></div>
+</div></aside></div></div>
+<script>
+const START={max:321,nor:357,pia:356};
+const SESSIONS=[{name:'Brazil Sprint',type:'Sprint'},{name:'Brazil GP',type:'GP'},{name:'Las Vegas GP',type:'GP'},{name:'Qatar Sprint',type:'Sprint'},{name:'Qatar GP',type:'GP'},{name:'Abu Dhabi GP',type:'GP'}];
+const GP_POINTS=[25,18,15,12,10,8,6,4,2,1]; const SP_POINTS=[8,7,6,5,4,3,2,1];
+function pointsFor(pos,type){if(!pos||pos<=0)return 0; return type==='GP'?((pos>=1&&pos<=10)?GP_POINTS[pos-1]:0):((pos>=1&&pos<=8)?SP_POINTS[pos-1]:0);}
+function optionList(){let o=`<option value=''>—</option><option value='0'>0</option>`; for(let i=1;i<=20;i++)o+=`<option value='${i}'>${i}</option>`; return o;}
+function makeRow(i,s){return `<tr data-type='${s.type}'><td>${s.name}</td><td>${s.type}</td>
+<td><select class='pos pos-max'>${optionList()}</select></td><td class='pts pts-max'>0</td>
+<td><select class='pos pos-nor'>${optionList()}</select></td><td class='pts pts-nor'>0</td>
+<td><select class='pos pos-pia'>${optionList()}</select></td><td class='pts pts-pia'>0</td></tr>`;}
+function renderTable(){const tb=document.getElementById('tbody'); tb.innerHTML=SESSIONS.map((s,i)=>makeRow(i,s)).join(''); tb.querySelectorAll('select.pos').forEach(sel=>sel.addEventListener('change',recalc));}
+function recalc(){let add={max:0,nor:0,pia:0}; document.querySelectorAll('#tbody tr').forEach(tr=>{const type=tr.getAttribute('data-type');
+  const pMax=parseInt(tr.querySelector('.pos-max').value||0,10), pNor=parseInt(tr.querySelector('.pos-nor').value||0,10), pPia=parseInt(tr.querySelector('.pos-pia').value||0,10);
+  const ptsMax=pointsFor(pMax,type), ptsNor=pointsFor(pNor,type), ptsPia=pointsFor(pPia,type);
+  tr.querySelector('.pts-max').textContent=ptsMax; tr.querySelector('.pts-nor').textContent=ptsNor; tr.querySelector('.pts-pia').textContent=ptsPia;
+  add.max+=ptsMax; add.nor+=ptsNor; add.pia+=ptsPia; });
+  const tMax=START.max+add.max, tNor=START.nor+add.nor, tPia=START.pia+add.pia;
+  document.getElementById('maxTotal').textContent=tMax; document.getElementById('norTotal').textContent=tNor; document.getElementById('piaTotal').textContent=tPia;
+  const cap=500; document.getElementById('barMax').style.width=Math.min(100,(tMax/cap)*100)+'%'; document.getElementById('barNor').style.width=Math.min(100,(tNor/cap)*100)+'%'; document.getElementById('barPia').style.width=Math.min(100,(tPia/cap)*100)+'%';
+  const gapNor=tMax-tNor, gapPia=tMax-tPia; setDelta('gapNor',gapNor); setDelta('gapPia',gapPia);
+  // auto-resize
+  try{ const h=document.documentElement.scrollHeight; parent.postMessage({kind:'f1-widget-height',height:h}, '*'); }catch(e){}
+}
+function setDelta(id,v){const el=document.getElementById(id); el.textContent=(v>0?'+':'')+v; el.classList.remove('good','bad','neutral'); el.classList.add(v>0?'good':(v===0?'neutral':'bad'));}
+document.addEventListener('DOMContentLoaded',()=>{renderTable();recalc();});
+</script>
+</body></html>
