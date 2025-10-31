@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F1 2025 Titel – What‑if Calculator (Interactief)</title>
+<style>
+  :root { --bg:#0f1320; --card:#161b2e; --muted:#8ea0c9; --accent:#53b6ff; --good:#56d364; --warn:#ffcc00; --bad:#ff6b6b; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:#e6ecff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  header{padding:20px 16px;border-bottom:1px solid #27314f;background:linear-gradient(180deg,#131a2b,#0f1320)}
+  h1{margin:0;font-size:20px}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 16px}
+  .grid{display:grid;grid-template-columns:1fr;gap:12px}
+  @media(min-width:960px){.grid{grid-template-columns:1.2fr 1fr}}
+  .card{background:var(--card);border:1px solid #27314f;border-radius:12px;padding:16px}
+  .muted{color:var(--muted)}
+  .kicker{font-size:13px;color:var(--muted);margin:4px 0 12px}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px 10px;border-bottom:1px solid #27314f;text-align:left}
+  th{color:#c9d6ff;font-weight:600;background:#1a2140;position:sticky;top:0}
+  select{width:100%;padding:8px;border-radius:8px;background:#0f1320;color:#e6ecff;border:1px solid #27314f}
+  .totals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .total{background:#0f1320;border:1px solid #27314f;border-radius:10px;padding:12px}
+  .total h3{margin:0 0 6px 0;font-size:14px;color:#c9d6ff}
+  .big{font-size:24px;font-weight:700}
+  .gap{font-variant-numeric:tabular-nums}
+  .bar{height:10px;background:#0f1320;border:1px solid #27314f;border-radius:6px;overflow:hidden}
+  .bar>div{height:100%;background:var(--accent);width:0%}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  button{padding:8px 12px;border-radius:8px;border:1px solid #27314f;background:#1b2442;color:#e6ecff;cursor:pointer}
+  button:hover{border-color:#3a4882}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #27314f;background:#0f1320;font-size:12px;color:#c9d6ff;margin-left:6px}
+  .good{color:var(--good)}
+  .bad{color:var(--bad)}
+  .warn{color:var(--warn)}
+  footer{color:#6f83b8;padding:18px 16px;text-align:center}
+  .small{font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>F1 2025 Titel – What‑if Calculator <span class="pill">BRA (Sprint) → LV → QAT (Sprint) → ABD</span></h1>
+    <div class="kicker">Stel per sessie de posities in voor <b>Verstappen</b>, <b>Norris</b> en <b>Piastri</b>. Punten tellen live op.</div>
+  </div>
+</header>
+
+<div class="wrap grid">
+  <section class="card">
+    <h2 style="margin:0 0 8px 0;">Posities per sessie</h2>
+    <div class="muted small">Tip: 0 of leeg = geen punten. GP kent punten t/m P10, Sprint t/m P8.</div>
+    <div style="overflow:auto; max-height:520px; margin-top:8px;">
+      <table id="sessions">
+        <thead>
+          <tr>
+            <th>Sessie</th><th>Type</th>
+            <th>Max Pos</th><th>Max Pnt</th>
+            <th>Norris Pos</th><th>Norris Pnt</th>
+            <th>Piastri Pos</th><th>Piastri Pnt</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="actions">
+      <button id="presetA">Preset A (agressief)</button>
+      <button id="presetB">Preset B (consistent)</button>
+      <button id="reset">Reset</button>
+    </div>
+  </section>
+
+  <aside class="card">
+    <h2 style="margin:0 0 8px 0;">Tussenstand</h2>
+    <div class="muted small">Startpunten na Mexico (26 okt 2025): Max 321 • Norris 357 • Piastri 356</div>
+    <div class="totals">
+      <div class="total">
+        <h3>Verstappen</h3>
+        <div class="big" id="maxTotal">321</div>
+        <div class="bar"><div id="barMax"></div></div>
+      </div>
+      <div class="total">
+        <h3>Norris</h3>
+        <div class="big" id="norTotal">357</div>
+        <div class="bar"><div id="barNor"></div></div>
+      </div>
+      <div class="total">
+        <h3>Piastri</h3>
+        <div class="big" id="piaTotal">356</div>
+        <div class="bar"><div id="barPia"></div></div>
+      </div>
+      <div class="total">
+        <h3>Gaten (Max – rivaal)</h3>
+        <div class="gap">vs Norris: <span id="gapNor" class="bad">-36</span></div>
+        <div class="gap">vs Piastri: <span id="gapPia" class="bad">-35</span></div>
+      </div>
+    </div>
+    <div style="margin-top:12px" class="small muted">
+      Richtlijn: Max moet netto <b>+37</b> vs Norris en <b>+36</b> vs Piastri scoren over deze 4 weekenden. Sprint-weekenden zijn de hefboom.
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <div class="small">Puntentabellen 2025: GP 25‑18‑15‑12‑10‑8‑6‑4‑2‑1 • Sprint 8‑7‑6‑5‑4‑3‑2‑1 • Geen snelste-rondepunt.</div>
+</footer>
+
+<script>
+const START = { max:321, nor:357, pia:356 };
+const SESSIONS = [
+  { name:"Brazil Sprint", type:"Sprint" },
+  { name:"Brazil GP",     type:"GP"     },
+  { name:"Las Vegas GP",  type:"GP"     },
+  { name:"Qatar Sprint",  type:"Sprint" },
+  { name:"Qatar GP",      type:"GP"     },
+  { name:"Abu Dhabi GP",  type:"GP"     },
+];
+const GP_POINTS = [25,18,15,12,10,8,6,4,2,1]; // P1..P10
+const SP_POINTS = [8,7,6,5,4,3,2,1];          // P1..P8
+
+function pointsFor(pos, type){
+  if(!pos || pos<=0) return 0;
+  if(type==="GP"){
+    return (pos>=1 && pos<=10) ? GP_POINTS[pos-1] : 0;
+  } else {
+    return (pos>=1 && pos<=8) ? SP_POINTS[pos-1] : 0;
+  }
+}
+
+function optionList(){
+  let opts = `<option value="">—</option><option value="0">0</option>`;
+  for(let i=1;i<=20;i++) opts += `<option value="${i}">${i}</option>`;
+  return opts;
+}
+
+function makeRow(idx, s){
+  return `
+    <tr data-idx="${idx}" data-type="${s.type}">
+      <td>${s.name}</td>
+      <td>${s.type}</td>
+      <td><select class="pos pos-max">${optionList()}</select></td>
+      <td class="pts pts-max">0</td>
+      <td><select class="pos pos-nor">${optionList()}</select></td>
+      <td class="pts pts-nor">0</td>
+      <td><select class="pos pos-pia">${optionList()}</select></td>
+      <td class="pts pts-pia">0</td>
+    </tr>
+  `;
+}
+
+function renderTable(){
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = SESSIONS.map((s,i)=>makeRow(i,s)).join('');
+  tb.querySelectorAll('select.pos').forEach(sel=>{
+    sel.addEventListener('change', recalc);
+  });
+}
+
+function recalc(){
+  let add = { max:0, nor:0, pia:0 };
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
+    const type = tr.getAttribute('data-type');
+    const pMax = parseInt(tr.querySelector('.pos-max').value || 0, 10);
+    const pNor = parseInt(tr.querySelector('.pos-nor').value || 0, 10);
+    const pPia = parseInt(tr.querySelector('.pos-pia').value || 0, 10);
+    const ptsMax = pointsFor(pMax, type);
+    const ptsNor = pointsFor(pNor, type);
+    const ptsPia = pointsFor(pPia, type);
+    tr.querySelector('.pts-max').textContent = ptsMax;
+    tr.querySelector('.pts-nor').textContent = ptsNor;
+    tr.querySelector('.pts-pia').textContent = ptsPia;
+    add.max += ptsMax; add.nor += ptsNor; add.pia += ptsPia;
+  });
+  const tMax = START.max + add.max;
+  const tNor = START.nor + add.nor;
+  const tPia = START.pia + add.pia;
+  document.getElementById('maxTotal').textContent = tMax;
+  document.getElementById('norTotal').textContent = tNor;
+  document.getElementById('piaTotal').textContent = tPia;
+  // Bars normalized to 500 as a rough cap
+  const cap = 500;
+  document.getElementById('barMax').style.width = Math.min(100, (tMax/cap)*100) + '%';
+  document.getElementById('barNor').style.width = Math.min(100, (tNor/cap)*100) + '%';
+  document.getElementById('barPia').style.width = Math.min(100, (tPia/cap)*100) + '%';
+  const gapNor = tMax - tNor;
+  const gapPia = tMax - tPia;
+  const gN = document.getElementById('gapNor');
+  const gP = document.getElementById('gapPia');
+  gN.textContent = (gapNor>0?'+':'') + gapNor;
+  gP.textContent = (gapPia>0?'+':'') + gapPia;
+  gN.className = gapNor>0 ? 'good' : (gapNor===0 ? 'warn' : 'bad');
+  gP.className = gapPia>0 ? 'good' : (gapPia===0 ? 'warn' : 'bad');
+}
+
+function applyPreset(preset){
+  const rows = Array.from(document.querySelectorAll('#tbody tr'));
+  // Helper to set positions by row index: [max, nor, pia]
+  function setRow(i, max,nor,pia){
+    const r = rows[i];
+    r.querySelector('.pos-max').value = String(max);
+    r.querySelector('.pos-nor').value = String(nor);
+    r.querySelector('.pos-pia').value = String(pia);
+  }
+  if(preset==='A'){
+    // Aggressief: Max wint Sprint+GP in BRA & QAT, wint LV, P2 ABD; McLarens P3/P4 en 1x P2
+    setRow(0,1,3,4); // BRA Sprint
+    setRow(1,1,3,2); // BRA GP
+    setRow(2,1,3,4); // LV GP
+    setRow(3,1,3,4); // QAT Sprint
+    setRow(4,1,3,2); // QAT GP
+    setRow(5,2,3,4); // ABD GP
+  } else if(preset==='B'){
+    // Consistent: Max P2 in sprints, wint 2 GP's; McLarens delen wins/P2's
+    setRow(0,2,3,1); // BRA Sprint
+    setRow(1,2,3,1); // BRA GP
+    setRow(2,1,2,3); // LV GP
+    setRow(3,2,3,4); // QAT Sprint
+    setRow(4,1,2,3); // QAT GP
+    setRow(5,1,2,3); // ABD GP
+  }
+  recalc();
+}
+
+function resetAll(){
+  document.querySelectorAll('#tbody select').forEach(s=>s.value="");
+  recalc();
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  renderTable();
+  recalc();
+  document.getElementById('presetA').addEventListener('click', ()=>applyPreset('A'));
+  document.getElementById('presetB').addEventListener('click', ()=>applyPreset('B'));
+  document.getElementById('reset').addEventListener('click', resetAll);
+});
+</script>
+</body>
+</html>
